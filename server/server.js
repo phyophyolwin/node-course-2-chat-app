@@ -38,11 +38,12 @@ io.on('connection', (socket) =>{//this socket is similar to client socket
     //     console.log('createEmail', newEmail);
     // });
 
-    socket.on('createMessage',(message) =>{
+    socket.on('createMessage',(message, callback) =>{//callback is to ack
         console.log('createMessage', message);
         //io.emit will send message to everyone who is listening to same link, including the sender.
         io.emit('newMessage', generateMessage(message.from, message.text)); //this is to emit the message to all the connected client, like real time chat
 
+        callback('This is from the server.');
         //this will send to everyone but except the sender
         // socket.broadcast.emit('newMessage',{
         //     from: message.from,
