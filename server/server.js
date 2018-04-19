@@ -3,6 +3,7 @@ const http = require('http');
 const express = require('express');
 const socketIO = require('socket.io');//to set up the server to communicate server and client two ways
 
+const {generateMessage} = require('./utils/message');
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
 let app = express();
@@ -14,17 +15,9 @@ app.use(express.static(publicPath));//setting the public folder
 io.on('connection', (socket) =>{//this socket is similar to client socket
     console.log('New user conneccted');
 
-    socket.emit('newMessage', {
-        from: 'Admin',
-        text: 'Welcome to the chat app',
-        createdAt: new Date().getTime()
-    });
+    socket.emit('newMessage', generateMessage('Admin','Welcome to the chat app'));
 
-    socket.broadcast.emit('newMessage',{
-        from: 'Admin',
-        text: 'New user joined',
-        createdAt: new Date().getTime()
-    });
+    socket.broadcast.emit('newMessage',generateMessage('Admin','New user joined'));
 
     //this is publisher, first arg is the event name, must be esame as the one in client, second arg is the data to be sent
     // socket.emit('newEmail', {
@@ -48,11 +41,7 @@ io.on('connection', (socket) =>{//this socket is similar to client socket
     socket.on('createMessage',(message) =>{
         console.log('createMessage', message);
         //io.emit will send message to everyone who is listening to same link, including the sender.
-        io.emit('newMessage', {
-            from: message.from,
-            text: message.text,
-            createdAt: new Date().getTime()
-        }); //this is to emit the message to all the connected client, like real time chat
+        io.emit('newMessage', generateMessage(message.from, message.text)); //this is to emit the message to all the connected client, like real time chat
 
         //this will send to everyone but except the sender
         // socket.broadcast.emit('newMessage',{
