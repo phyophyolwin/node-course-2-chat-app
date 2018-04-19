@@ -17,15 +17,15 @@ io.on('connection', (socket) =>{//this socket is similar to client socket
     //this is publisher, first arg is the event name, must be esame as the one in client, second arg is the data to be sent
     // socket.emit('newEmail', {
     //     from: 'mike@example.com',
-    //     text: 'Hey. What is going on.',
+    //     text: 'Hey. This is server Email.',
     //     createAted: 123
     // });
 
-    socket.emit('newMessage',{
-        from: 'mike@example.com',
-        text: 'Hey. This is server message',
-        createdAt: 123
-    });
+    // socket.emit('newMessage',{
+    //     from: 'mike@example.com',
+    //     text: 'Hey. This is server message',
+    //     createdAt: 123
+    // });
 
 //this is listener from client, 1st arg is the event name, must be sync with client
 //2nd arg is the data to be sent to client
@@ -33,8 +33,13 @@ io.on('connection', (socket) =>{//this socket is similar to client socket
         console.log('createEmail', newEmail);
     });
 
-    socket.on('createMessage',(newMessage) =>{
-        console.log('createMessage', newMessage);
+    socket.on('createMessage',(message) =>{
+        console.log('createMessage', message);
+        io.emit('newMessage', {
+            from: message.from,
+            text: message.text,
+            createdAt: new Date().getTime()
+        }); //this is to emit the message to all the connected client, like real time chat
     });
 
     socket.on('disconnect', () =>{
