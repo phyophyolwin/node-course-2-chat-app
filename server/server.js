@@ -14,6 +14,18 @@ app.use(express.static(publicPath));//setting the public folder
 io.on('connection', (socket) =>{//this socket is similar to client socket
     console.log('New user conneccted');
 
+    socket.emit('newMessage', {
+        from: 'Admin',
+        text: 'Welcome to the chat app',
+        createdAt: new Date().getTime()
+    });
+
+    socket.broadcast.emit('newMessage',{
+        from: 'Admin',
+        text: 'New user joined',
+        createdAt: new Date().getTime()
+    });
+
     //this is publisher, first arg is the event name, must be esame as the one in client, second arg is the data to be sent
     // socket.emit('newEmail', {
     //     from: 'mike@example.com',
@@ -29,17 +41,25 @@ io.on('connection', (socket) =>{//this socket is similar to client socket
 
 //this is listener from client, 1st arg is the event name, must be sync with client
 //2nd arg is the data to be sent to client
-    socket.on('createEmail',(newEmail) =>{
-        console.log('createEmail', newEmail);
-    });
+    // socket.on('createEmail',(newEmail) =>{
+    //     console.log('createEmail', newEmail);
+    // });
 
     socket.on('createMessage',(message) =>{
         console.log('createMessage', message);
+        //io.emit will send message to everyone who is listening to same link, including the sender.
         io.emit('newMessage', {
             from: message.from,
             text: message.text,
             createdAt: new Date().getTime()
         }); //this is to emit the message to all the connected client, like real time chat
+
+        //this will send to everyone but except the sender
+        // socket.broadcast.emit('newMessage',{
+        //     from: message.from,
+        //     text: message.text,
+        //     createdAt: new Date().getTime()
+        // });
     });
 
     socket.on('disconnect', () =>{
