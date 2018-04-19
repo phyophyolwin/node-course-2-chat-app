@@ -14,6 +14,29 @@ app.use(express.static(publicPath));//setting the public folder
 io.on('connection', (socket) =>{//this socket is similar to client socket
     console.log('New user conneccted');
 
+    //this is publisher, first arg is the event name, must be esame as the one in client, second arg is the data to be sent
+    // socket.emit('newEmail', {
+    //     from: 'mike@example.com',
+    //     text: 'Hey. What is going on.',
+    //     createAted: 123
+    // });
+
+    socket.emit('newMessage',{
+        from: 'mike@example.com',
+        text: 'Hey. This is server message',
+        createdAt: 123
+    });
+
+//this is listener from client, 1st arg is the event name, must be sync with client
+//2nd arg is the data to be sent to client
+    socket.on('createEmail',(newEmail) =>{
+        console.log('createEmail', newEmail);
+    });
+
+    socket.on('createMessage',(newMessage) =>{
+        console.log('createMessage', newMessage);
+    });
+
     socket.on('disconnect', () =>{
         console.log('User was disconnected');
     });
