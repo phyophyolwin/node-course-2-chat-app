@@ -18,7 +18,19 @@ function scrollToBottom(){
 }
 
 socket.on('connect', function (){
-    console.log('Connected to server from client');
+    var params = jQuery.deparam(window.location.search);
+
+    socket.emit('join', params, function(error){
+        if(error){
+            alert(error);
+            window.location.href='/';//redirecting to root of the page
+        }else{
+            console.log('No error');
+        }
+    });
+
+
+    // console.log('Connected to server from client');
 
     // socket.emit('createEmail', {
     //     to: 'jen@example.com',
