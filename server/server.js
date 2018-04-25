@@ -6,11 +6,14 @@ const socketIO = require('socket.io');//to set up the server to communicate serv
 const {generateMessage} = require('./utils/message');
 const {generateLocationMessage} = require('./utils/message');
 const {isRealString} = require('./utils/validation');
+const {Users} = require('./utils/users');
+
 const publicPath = path.join(__dirname, '../public');
 const port = process.env.PORT || 3000;
 let app = express();
 let server = http.createServer(app);
 let io = socketIO(server);// get the web socket server, now ready to connect the connection
+let users = new Users();
 
 app.use(express.static(publicPath));//setting the public folder
 
@@ -19,12 +22,15 @@ io.on('connection', (socket) =>{//this socket is similar to client socket
 
     socket.on('join', (params, callback)=>{
         if(!isRealString(params.name) || !isRealString(params.room)){
-            callback('Name and room name are required.');
+            return callback('Name and room name are required.');
         }
 
         //joining the socket room
         socket.join(params.room);
+        users.removeUser(socket.id);
+        users.addUser(socket.id, params.name, params.room);
 
+        io.to(params.room).emit('updateUserList', users.getUserList(params.room));
         socket.emit('newMessage', generateMessage('Admin','Welcome to the chat app'));
         socket.broadcast.to(params.room).emit('newMessage',generateMessage('Admin',`${params.name} has joined.`));
         
@@ -57,7 +63,15 @@ io.on('connection', (socket) =>{//this socket is similar to client socket
     });
 
     socket.on('disconnect', () =>{
-        console.log('User was disconnected');
+        let user = users.removeUser(socket.id);
+
+        if(user){
+            io.to(user.room).emit('updateUserList',users.getUserList(user.room));
+            io.to(user.room).emit('newMessage',generateMessage('Admin',`${user.name} has left.`));
+        }
+        
+        // console.log('User was disconnected');
+
     });
 
     // socket.emit('newMessage', generateMessage('Admin','Welcome to the chat app'));
